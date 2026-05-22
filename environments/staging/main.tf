@@ -14,22 +14,6 @@ data "http" "my_ip" {
   url = "https://checkip.amazonaws.com"
 }
 
-# Fetch available Availability Zones (avoid hardcoding a/b/c)
-data "aws_availability_zones" "available" {
-  state = "available"
-}
-
-# Fetch latest Ubuntu 22.04 LTS AMI from Canonical
-data "aws_ami" "ubuntu_2204" {
-  most_recent = true
-  owners      = ["099720109477"] # Canonical
-
-  filter {
-    name   = "name"
-    values = ["ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-*"]
-  }
-}
-
 # =========================
 # LOCALS
 # =========================
@@ -39,7 +23,7 @@ locals {
 
   # Use first 3 AZs for staging environment
   azs = slice(
-    data.aws_availability_zones.available.names,
+    var.az_names,
     0,
     var.az_count
   )
@@ -107,12 +91,13 @@ module "security" {
 module "k0s" {
   source = "../../modules/compute/k0s"
 
-  ami           = data.aws_ami.ubuntu_2204.id
-  instance_type = var.k0s_instance_type
-  key_name      = module.keypair.key_name
-  subnet_ids    = module.network.k8s_private_subnet_ids
-  k0s_sg_id     = module.security.k0s_sg_id
-  nodes         = var.k0s_nodes
+  ami              = var.ami_id
+  instance_type    = var.k0s_instance_type
+  root_volume_size = var.k0s_root_volume_size
+  key_name         = module.keypair.key_name
+  subnet_ids       = module.network.k8s_private_subnet_ids
+  k0s_sg_id        = module.security.k0s_sg_id
+  nodes            = var.k0s_nodes
 }
 
 # =========================
@@ -123,7 +108,7 @@ module "k0s" {
 module "observability" {
   source = "../../modules/compute/observability"
 
-  ami           = data.aws_ami.ubuntu_2204.id
+  ami           = var.ami_id
   instance_type = var.observability_instance_type
   key_name      = module.keypair.key_name
   subnet_ids    = module.network.observability_subnet_ids
@@ -139,7 +124,7 @@ module "observability" {
 module "openvpn" {
   source = "../../modules/compute/openvpn"
 
-  ami              = data.aws_ami.ubuntu_2204.id
+  ami              = var.ami_id
   instance_type    = var.openvpn_instance_type
   key_name         = module.keypair.key_name
   public_subnet_id = module.network.public_subnet_ids[var.openvpn_public_subnet_index]

@@ -137,6 +137,11 @@ variable "k0s_instance_type" {
   description = "Instance type for k0s controller & workers"
 }
 
+variable "k0s_root_volume_size" {
+  type        = number
+  description = "Root EBS volume size (GiB) for k0s nodes"
+}
+
 # Observability nodes
 variable "observability_instance_type" {
   type        = string
@@ -160,4 +165,14 @@ variable "alb_target_port" {
 variable "environment" {
   type        = string
   description = "Environment name (dev, staging, prod)"
+}
+
+variable "az_names" {
+  type        = list(string)
+  description = "Static availability zone names for restricted IAM environments"
+}
+
+variable "ami_id" {
+  type        = string
+  description = "Preselected AMI ID for restricted IAM environments"
 }

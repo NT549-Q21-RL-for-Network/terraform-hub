@@ -127,6 +127,17 @@ resource "aws_security_group" "observability" {
     }
   }
 
+  dynamic "ingress" {
+    for_each = local.vpn_cidrs
+    content {
+      from_port   = 9090
+      to_port     = 9090
+      protocol    = "tcp"
+      cidr_blocks = [ingress.value]
+      description = "Prometheus from VPN clients"
+    }
+  }
+
   ingress {
     from_port       = 3000
     to_port         = 3000
@@ -141,6 +152,14 @@ resource "aws_security_group" "observability" {
     protocol    = "tcp"
     cidr_blocks = [var.vpc_cidr]
     description = "Prometheus from VPC workloads"
+  }
+
+  ingress {
+    from_port       = 9090
+    to_port         = 9090
+    protocol        = "tcp"
+    security_groups = [aws_security_group.k0s.id]
+    description     = "Prometheus from k0s nodes/pods"
   }
 
   ingress {
