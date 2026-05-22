@@ -43,3 +43,16 @@ resource "local_file" "openvpn_inventory" {
 vpn ansible_host=${module.openvpn.public_ip} ansible_user=ubuntu
 EOF
 }
+
+# =====================================================
+# ALB Endpoints - Staging
+# =====================================================
+resource "local_file" "alb_inventory" {
+  filename = "${var.ansible_inventory_dir}/alb.ini"
+
+  content = <<-EOF
+[alb]
+kubernetes_alb ansible_host=${module.kubernetes_alb.alb_dns_name}
+observability_alb ansible_host=${module.observability_alb.alb_dns_name}
+EOF
+}

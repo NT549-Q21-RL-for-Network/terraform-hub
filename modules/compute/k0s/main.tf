@@ -16,6 +16,11 @@ resource "aws_instance" "k0s_node" {
   key_name               = var.key_name
   vpc_security_group_ids = [var.k0s_sg_id]
 
+  root_block_device {
+    volume_size           = var.root_volume_size
+    delete_on_termination = true
+  }
+
   tags = {
     Name = lookup(local.node_name_overrides, each.key, each.key)
   }

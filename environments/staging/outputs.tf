@@ -37,3 +37,10 @@ output "kubernetes_alb_dns_name" {
 output "observability_alb_dns_name" {
   value = module.observability_alb.alb_dns_name
 }
+
+output "alb_dns" {
+  value = {
+    kubernetes    = module.kubernetes_alb.alb_dns_name
+    observability = module.observability_alb.alb_dns_name
+  }
+}
